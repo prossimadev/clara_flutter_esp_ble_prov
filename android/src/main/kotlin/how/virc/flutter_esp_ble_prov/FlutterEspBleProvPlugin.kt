@@ -144,6 +144,7 @@ class Boss {
   private val scanBleMethod = "scanBleDevices"
   private val scanWifiMethod = "scanWifiNetworks"
   private val provisionWifiMethod = "provisionWifi"
+  private val sendTokenMethod = "sendToken"
   private val platformVersionMethod = "getPlatformVersion"
 
   /**
@@ -161,6 +162,7 @@ class Boss {
   private val bleScanner: BleScanManager = BleScanManager(this)
   private val wifiScanner: WifiScanManager = WifiScanManager(this)
   private val wifiProvisioner: WifiProvisionManager = WifiProvisionManager(this)
+  private val tokenManager: TokenManager = TokenManager(this)
 
   private lateinit var platformContext: Context
   lateinit var platformActivity: Activity
@@ -195,7 +197,10 @@ class Boss {
         }
       }
     })
-    esp.connectBLEDevice(conn.device, conn.primaryServiceUuid)
+    Handler(Looper.getMainLooper()).postDelayed({
+      esp.connectBLEDevice(conn.device, conn.primaryServiceUuid)
+    }, 300)
+    //esp.connectBLEDevice(conn.device, conn.primaryServiceUuid)
   }
 
   fun call(call: MethodCall, result: Result) {
@@ -206,6 +211,7 @@ class Boss {
         scanBleMethod -> bleScanner.call(ctx)
         scanWifiMethod -> wifiScanner.call(ctx)
         provisionWifiMethod -> wifiProvisioner.call(ctx)
+        sendTokenMethod -> tokenManager.call(ctx)
         else -> result.notImplemented()
       }
     })
@@ -348,6 +354,47 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
     }
   }
 
+}
+
+
+class TokenManager(boss: Boss) : ActionManager(boss) {
+  override fun call(ctx: CallContext) {
+    boss.d("sendToken ${ctx.call.arguments}")
+    val deviceName = ctx.arg("deviceName") ?: return
+    val proofOfPossession = ctx.arg("proofOfPossession") ?: return
+    val token = ctx.arg("token") ?: return
+    val conn = boss.connector(deviceName) ?: return
+
+    boss.connect(conn, proofOfPossession) { esp ->
+      boss.d("sendToken: connected, sending token")
+      try {
+        esp.sendDataToCustomEndPoint("custom-data", token.toByteArray(), object : com.espressif.provisioning.listeners.ResponseListener {
+          override fun onSuccess(returnData: ByteArray?) {
+            boss.d("sendToken: response received")
+            Handler(Looper.getMainLooper()).post {
+              val response = returnData?.let { String(it, Charsets.UTF_8) } ?: "OK"
+              ctx.result.success(response)
+            }
+            esp.disconnectDevice()
+          }
+
+          override fun onFailure(e: Exception?) {
+            boss.e("sendToken error: $e")
+            Handler(Looper.getMainLooper()).post {
+              ctx.result.error("E_SEND_TOKEN", "Failed to send token", e?.message)
+            }
+            esp.disconnectDevice()
+          }
+        })
+      } catch (e: Exception) {
+        boss.e("sendToken error: $e")
+        Handler(Looper.getMainLooper()).post {
+          ctx.result.error("E_SEND_TOKEN", "Failed to send token", e.message)
+        }
+        esp.disconnectDevice()
+      }
+    }
+  }
 }
 
 

@@ -29,6 +29,16 @@ class FlutterEspBleProv {
         .provisionWifi(deviceName, proofOfPossession, ssid, passphrase);
   }
 
+  /// Send token to the provisioned device
+  /// [deviceName] is the name of the device
+  /// [proofOfPossession] is the proof of possession string
+  /// [token] is the token to send as a string
+  Future<String?> sendToken(String deviceName, String proofOfPossession,
+      String token) {
+    return FlutterEspBleProvPlatform.instance
+        .sendToken(deviceName, proofOfPossession, token);
+  }
+
   /// Returns the native platform version
   Future<String?> getPlatformVersion() {
     return FlutterEspBleProvPlatform.instance.getPlatformVersion();

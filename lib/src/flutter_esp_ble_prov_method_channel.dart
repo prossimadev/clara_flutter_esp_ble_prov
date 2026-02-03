@@ -55,4 +55,15 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
     };
     return await methodChannel.invokeMethod<bool?>('provisionWifi', args);
   }
+
+  @override
+  Future<String?> sendToken(String deviceName, String proofOfPossession,
+      String token) async {
+    final args = {
+      'deviceName': deviceName,
+      'proofOfPossession': proofOfPossession,
+      'token': token
+    };
+    return await methodChannel.invokeMethod<String?>('sendToken', args);
+  }
 }
