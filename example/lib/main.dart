@@ -21,7 +21,7 @@ class _MyAppState extends State<MyApp> {
   final defaultDevicePrefix = 'PROV';
 
   List<String> devices = [];
-  List<String> networks = [];
+  List<WifiNetwork> networks = [];
 
   String selectedDeviceName = '';
   String selectedSsid = '';
@@ -64,6 +64,24 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       feedbackMessage = '$feedbackMessage\n$msg';
     });
+  }
+
+  // Helper per ottenere l'icona in base all'intensità del segnale
+  IconData _getSignalIcon(int rssi) {
+    if (rssi >= -50) return Icons.signal_wifi_4_bar;
+    if (rssi >= -60) return Icons.signal_wifi_4_bar;
+    if (rssi >= -70) return Icons.network_wifi_3_bar;
+    if (rssi >= -80) return Icons.network_wifi_2_bar;
+    return Icons.network_wifi_1_bar;
+  }
+
+  // Helper per ottenere il colore in base all'intensità del segnale
+  Color _getSignalColor(int rssi) {
+    if (rssi >= -50) return Colors.green;
+    if (rssi >= -60) return Colors.lightGreen;
+    if (rssi >= -70) return Colors.orange;
+    if (rssi >= -80) return Colors.deepOrange;
+    return Colors.red;
   }
 
   @override
@@ -178,16 +196,28 @@ class _MyAppState extends State<MyApp> {
                   child: ListView.builder(
                     itemCount: networks.length,
                     itemBuilder: (context, i) {
+                      final network = networks[i];
                       return ListTile(
                         title: Text(
-                          networks[i],
+                          network.ssid,
                           style: TextStyle(
                             color: Colors.green.shade700,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        subtitle: Text(
+                          'Signal: ${network.rssi} dBm',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        trailing: Icon(
+                          _getSignalIcon(network.rssi),
+                          color: _getSignalColor(network.rssi),
+                        ),
                         onTap: () async {
-                          selectedSsid = networks[i];
+                          selectedSsid = network.ssid;
                           await provisionWifi();
                         },
                       );

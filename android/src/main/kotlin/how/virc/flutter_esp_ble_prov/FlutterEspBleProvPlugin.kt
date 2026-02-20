@@ -155,7 +155,7 @@ class Boss {
   /**
    * The available WiFi networks for the most recently scanned BLE device.
    */
-  val networks = mutableSetOf<String>()
+  val networks = mutableListOf<Map<String, Any>>()
 
   // Managers performing the various actions
   private val permissionManager: PermissionManager = PermissionManager(this)
@@ -282,10 +282,15 @@ class WifiScanManager(boss: Boss) : ActionManager(boss) {
       esp.scanNetworks(object : WiFiScanListener {
         override fun onWifiListReceived(wifiList: ArrayList<WiFiAccessPoint>?) {
           wifiList ?: return
-          wifiList.forEach { boss.networks.add(it.wifiName) }
+          wifiList.forEach { 
+            boss.networks.add(mapOf(
+              "ssid" to it.wifiName,
+              "rssi" to it.rssi
+            ))
+          }
           boss.d("scanNetworks: complete ${boss.networks}")
           Handler(Looper.getMainLooper()).post {
-            ctx.result.success(ArrayList<String>(boss.networks))
+            ctx.result.success(ArrayList(boss.networks))
           }
           boss.d("scanNetworks: complete 2 ${boss.networks}")
           esp.disconnectDevice()

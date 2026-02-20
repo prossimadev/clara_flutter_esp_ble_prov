@@ -1,5 +1,7 @@
 import 'src/flutter_esp_ble_prov_platform_interface.dart';
 
+export 'src/wifi_network.dart';
+
 /// Plugin provides core functionality to provision ESP32 devices over BLE
 class FlutterEspBleProv {
   /// Initiates a scan of BLE devices with the given [prefix].
@@ -15,7 +17,7 @@ class FlutterEspBleProv {
   /// This library uses SECURITY_1 by default which insists on a
   /// [proofOfPossession] string. ESP32 Arduino demo defaults this value to
   /// "abcd1234"
-  Future<List<String>> scanWifiNetworks(
+  Future<List<WifiNetwork>> scanWifiNetworks(
       String deviceName, String proofOfPossession) {
     return FlutterEspBleProvPlatform.instance
         .scanWifiNetworks(deviceName, proofOfPossession);

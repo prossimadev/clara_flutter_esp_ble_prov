@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'flutter_esp_ble_prov_platform_interface.dart';
+import 'wifi_network.dart';
 
 /// An implementation of [FlutterEspBleProvPlatform] that uses method channels.
 class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
@@ -29,7 +30,7 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
   }
 
   @override
-  Future<List<String>> scanWifiNetworks(
+  Future<List<WifiNetwork>> scanWifiNetworks(
       String deviceName, String proofOfPossession) async {
     final args = {
       'deviceName': deviceName,
@@ -37,9 +38,11 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
     };
     final raw = await methodChannel.invokeMethod<List<Object?>>(
         'scanWifiNetworks', args);
-    final List<String> networks = [];
+    final List<WifiNetwork> networks = [];
     if (raw != null) {
-      networks.addAll(raw.cast<String>());
+      for (var item in raw) {
+        networks.add(WifiNetwork.fromMap(item as Map));
+      }
     }
     return networks;
   }

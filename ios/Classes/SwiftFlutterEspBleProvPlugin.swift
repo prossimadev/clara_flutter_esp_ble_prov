@@ -76,7 +76,17 @@ private class BLEProvisionService: ProvisionService {
                     NSLog("Error scanning wifi networks, deviceName: \(deviceName) ")
                     ESPErrorHandler.handle(error: error!, result: self.result)
                 }
-                self.result(wifiList?.map({(networks: ESPWifiNetwork) -> String in return networks.ssid}))
+
+                // Creiamo una lista di dizionari con SSID e RSSI
+                let networksData = wifiList?.map({ (network: ESPWifiNetwork) -> [String: Any] in
+                    return [
+                        "ssid": network.ssid,
+                        "rssi": network.rssi
+                    ]
+                })
+
+                // Inviamo il risultato a Flutter
+                self.result(networksData)
                 device?.disconnect()
             }
         }
