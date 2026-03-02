@@ -6,6 +6,7 @@ public class SwiftFlutterEspBleProvPlugin: NSObject, FlutterPlugin {
     private let SCAN_BLE_DEVICES = "scanBleDevices"
     private let SCAN_WIFI_NETWORKS = "scanWifiNetworks"
     private let PROVISION_WIFI = "provisionWifi"
+    private let SEND_TOKEN = "sendToken"
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "flutter_esp_ble_prov", binaryMessenger: registrar.messenger())
@@ -36,6 +37,15 @@ public class SwiftFlutterEspBleProvPlugin: NSObject, FlutterPlugin {
                 ssid: ssid,
                 passphrase: passphrase
             )
+        } else if(call.method == SEND_TOKEN) {
+            let deviceName = arguments["deviceName"] as! String
+            let proofOfPossession = arguments["proofOfPossession"] as! String
+            let token = arguments["token"] as! String
+            provisionService.sendToken(
+                deviceName: deviceName,
+                proofOfPossession: proofOfPossession,
+                token: token
+            )
         } else {
             result("iOS " + UIDevice.current.systemVersion)
         }
@@ -48,6 +58,7 @@ protocol ProvisionService {
     func searchDevices(prefix: String) -> Void
     func scanWifiNetworks(deviceName: String, proofOfPossession: String) -> Void
     func provision(deviceName: String, proofOfPossession: String, ssid: String, passphrase: String) -> Void
+    func sendToken(deviceName: String, proofOfPossession: String, token: String) -> Void
 }
 
 private class BLEProvisionService: ProvisionService {
@@ -109,7 +120,34 @@ private class BLEProvisionService: ProvisionService {
             }
         }
     }
-    
+
+    func sendToken(deviceName: String, proofOfPossession: String, token: String) {
+        self.connect(deviceName: deviceName, proofOfPossession: proofOfPossession) { device in
+            guard let tokenData = token.data(using: .utf8) else {
+                self.result(FlutterError(code: "INVALID_TOKEN", message: "Token conversion failed", details: nil))
+                return
+            }
+            
+            device?.sendDataToCustomEndPoint(path: "custom-data", data: tokenData) { returnData, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        NSLog("Error sending token: \(error.localizedDescription)")
+                        
+                        if let espError = error as? ESPError {
+                            ESPErrorHandler.handle(error: espError, result: self.result)
+                        } else {
+                            self.result(FlutterError(code: "E_SEND_TOKEN", message: error.localizedDescription, details: nil))
+                        }
+                    } else {
+                        let response = returnData != nil ? String(data: returnData!, encoding: .utf8) : "OK"
+                        self.result(response)
+                    }
+                    device?.disconnect()
+                }
+            }
+        }
+    }
+        
     private func connect(deviceName: String, proofOfPossession: String, completionHandler: @escaping (ESPDevice?) -> Void) {
         ESPProvisionManager.shared.createESPDevice(deviceName: deviceName, transport: .ble, security: .secure, proofOfPossession: proofOfPossession) { espDevice, error in
             

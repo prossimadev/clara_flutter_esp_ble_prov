@@ -282,6 +282,7 @@ class WifiScanManager(boss: Boss) : ActionManager(boss) {
       esp.scanNetworks(object : WiFiScanListener {
         override fun onWifiListReceived(wifiList: ArrayList<WiFiAccessPoint>?) {
           wifiList ?: return
+          boss.networks.clear()
           wifiList.forEach { 
             boss.networks.add(mapOf(
               "ssid" to it.wifiName,
@@ -292,7 +293,7 @@ class WifiScanManager(boss: Boss) : ActionManager(boss) {
           Handler(Looper.getMainLooper()).post {
             ctx.result.success(ArrayList(boss.networks))
           }
-          boss.d("scanNetworks: complete 2 ${boss.networks}")
+          //boss.d("scanNetworks: complete 2 ${boss.networks}")
           esp.disconnectDevice()
         }
 
