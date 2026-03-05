@@ -128,7 +128,7 @@ private class BLEProvisionService: ProvisionService {
                 return
             }
             
-            device?.sendDataToCustomEndPoint(path: "custom-data", data: tokenData) { returnData, error in
+            device?.sendData(path: "custom-data", data: tokenData) { returnData, error in
                 DispatchQueue.main.async {
                     if let error = error {
                         NSLog("Error sending token: \(error.localizedDescription)")
