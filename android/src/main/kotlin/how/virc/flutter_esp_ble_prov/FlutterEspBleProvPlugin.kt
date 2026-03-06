@@ -245,10 +245,14 @@ class BleScanManager(boss: Boss) : ActionManager(boss) {
   override fun call(ctx: CallContext) {
     boss.d("searchBleEspDevices: start")
     val prefix = ctx.arg("prefix") ?: return
+	
+	boss.devices.clear()
 
     boss.espManager.searchBleEspDevices(prefix, object : BleScanListener {
       override fun scanStartFailed() {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
+		boss.e("scanStart BLE failed")
+		ctx.result.error("BLE_SCAN_START_FAILED", "BLE scan start failed", null)
       }
 
       override fun onPeripheralFound(device: BluetoothDevice?, scanResult: ScanResult?) {
@@ -263,7 +267,9 @@ class BleScanManager(boss: Boss) : ActionManager(boss) {
       }
 
       override fun onFailure(e: java.lang.Exception?) {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
+		boss.e("BLE failure")
+		ctx.result.error("BLE_FAILURE", "BLE failure", "Exception details $e")
       }
 
     })
@@ -321,6 +327,7 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
       esp.provision(ssid, passphrase, object : ProvisionListener {
         override fun createSessionFailed(e: java.lang.Exception?) {
           boss.e("wifiprovision createSessionFailed")
+		  ctx.result.success(false)
         }
 
         override fun wifiConfigSent() {
@@ -352,7 +359,7 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
         }
 
         override fun onProvisioningFailed(e: java.lang.Exception?) {
-          boss.e("onProvisioningFailed")
+          boss.e("onProvisioningFailed $e")
           ctx.result.success(false)
         }
 
