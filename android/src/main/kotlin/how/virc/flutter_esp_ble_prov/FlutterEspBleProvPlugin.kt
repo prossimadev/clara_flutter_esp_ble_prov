@@ -157,6 +157,8 @@ class Boss {
    */
   val networks = mutableListOf<Map<String, Any>>()
 
+  val provResponse = mutableMapOf<String, Any>()
+
   // Managers performing the various actions
   private val permissionManager: PermissionManager = PermissionManager(this)
   private val bleScanner: BleScanManager = BleScanManager(this)
@@ -327,7 +329,12 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
       esp.provision(ssid, passphrase, object : ProvisionListener {
         override fun createSessionFailed(e: java.lang.Exception?) {
           boss.e("wifiprovision createSessionFailed")
-		  ctx.result.success(false)
+		  //ctx.result.success(false)
+          boss.provResponse = mapOf(
+            "success" to false,
+            "message" to "ESPERR001"
+          )
+          ctx.result.success(boss.provResponse)
         }
 
         override fun wifiConfigSent() {
@@ -336,7 +343,13 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
 
         override fun wifiConfigFailed(e: java.lang.Exception?) {
           boss.e("wifiConfiFailed $e")
-          ctx.result.success(false)
+          //ctx.result.success(false)
+          boss.provResponse = mapOf(
+            "success" to false,
+            "message" to "ESPERR002"
+          )
+          ctx.result.success(boss.provResponse)
+
         }
 
         override fun wifiConfigApplied() {
@@ -345,22 +358,42 @@ class WifiProvisionManager(boss: Boss) : ActionManager(boss) {
 
         override fun wifiConfigApplyFailed(e: java.lang.Exception?) {
           boss.e("wifiConfigApplyFailed $e")
-          ctx.result.success(false)
+          //ctx.result.success(false)
+          boss.provResponse = mapOf(
+            "success" to false,
+            "message" to "ESPERR003"
+          )
+          ctx.result.success(boss.provResponse)
         }
 
         override fun provisioningFailedFromDevice(failureReason: ESPConstants.ProvisionFailureReason?) {
           boss.e("provisioningFailedFromDevice $failureReason")
-          ctx.result.success(false)
+          //ctx.result.success(false)
+          boss.provResponse = mapOf(
+            "success" to false,
+            "message" to "ESPERR004"
+          )
+          ctx.result.success(boss.provResponse)
         }
 
         override fun deviceProvisioningSuccess() {
           boss.d("deviceProvisioningSuccess")
-          ctx.result.success(true)
+          //ctx.result.success(true)
+          boss.provResponse = mapOf(
+            "success" to true,
+            "message" to "Provisioning Success"
+          )
+          ctx.result.success(boss.provResponse)
         }
 
         override fun onProvisioningFailed(e: java.lang.Exception?) {
           boss.e("onProvisioningFailed $e")
-          ctx.result.success(false)
+          //ctx.result.success(false)
+          boss.provResponse = mapOf(
+            "success" to false,
+            "message" to "ESPERR005"
+          )
+          ctx.result.success(boss.provResponse)
         }
 
       })

@@ -1,7 +1,9 @@
 import 'src/flutter_esp_ble_prov_platform_interface.dart';
 import 'src/wifi_network.dart';
+import 'src/provisioning_response.dart';
 
 export 'src/wifi_network.dart';
+export 'src/provisioning_response.dart';
 
 /// Plugin provides core functionality to provision ESP32 devices over BLE
 class FlutterEspBleProv {
@@ -26,7 +28,7 @@ class FlutterEspBleProv {
 
   /// Provision the named WiFi network at [ssid] with the given [passphrase] for
   /// the named device [deviceName] and [proofOfPossession] string.
-  Future<bool?> provisionWifi(String deviceName, String proofOfPossession,
+  Future<ProvisioningResponse?> provisionWifi(String deviceName, String proofOfPossession,
       String ssid, String passphrase) {
     return FlutterEspBleProvPlatform.instance
         .provisionWifi(deviceName, proofOfPossession, ssid, passphrase);
