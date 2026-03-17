@@ -1,74 +1,51 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'src/flutter_esp_ble_prov_platform_interface.dart';
+import 'src/wifi_network.dart';
+import 'src/provisioning_response.dart';
 
-import '../flutter_esp_ble_prov.dart';
-import 'flutter_esp_ble_prov_platform_interface.dart';
-import 'wifi_network.dart';
-import 'provisioning_response.dart';
+export 'src/wifi_network.dart';
+export 'src/provisioning_response.dart';
 
-/// An implementation of [FlutterEspBleProvPlatform] that uses method channels.
-class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
-  /// The method channel used to interact with the native platform.
-  @visibleForTesting
-  final methodChannel = const MethodChannel('flutter_esp_ble_prov');
-
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version =
-        await methodChannel.invokeMethod<String>('getPlatformVersion');
-    return version;
+/// Plugin provides core functionality to provision ESP32 devices over BLE
+class FlutterEspBleProv {
+  /// Initiates a scan of BLE devices with the given [prefix].
+  ///
+  /// ESP32 Arduino demo defaults this value to "PROV_"
+  Future<List<String>> scanBleDevices(String prefix) {
+    return FlutterEspBleProvPlatform.instance.scanBleDevices(prefix);
   }
 
-  @override
-  Future<List<String>> scanBleDevices(String prefix) async {
-    final args = {'prefix': prefix};
-    final raw =
-        await methodChannel.invokeMethod<List<Object?>>('scanBleDevices', args);
-    final List<String> devices = [];
-    if (raw != null) {
-      devices.addAll(raw.cast<String>());
-    }
-    return devices;
-  }
+  /// Scan the available WiFi networks for the given [deviceName] and
+  /// [proofOfPossession] string.
 
-  @override
+  /// This library uses SECURITY_1 by default which insists on a
+  /// [proofOfPossession] string. ESP32 Arduino demo defaults this value to
+  /// "abcd1234"
   Future<List<WifiNetwork>> scanWifiNetworks(
-      String deviceName, String proofOfPossession) async {
-    final args = {
-      'deviceName': deviceName,
-      'proofOfPossession': proofOfPossession,
-    };
-    final raw = await methodChannel.invokeMethod<List<Object?>>(
-        'scanWifiNetworks', args);
-    final List<WifiNetwork> networks = [];
-    if (raw != null) {
-      for (var item in raw) {
-        networks.add(WifiNetwork.fromMap(item as Map));
-      }
-    }
-    return networks;
+      String deviceName, String proofOfPossession) {
+    return FlutterEspBleProvPlatform.instance
+        .scanWifiNetworks(deviceName, proofOfPossession);
   }
 
-  @override
+  /// Provision the named WiFi network at [ssid] with the given [passphrase] for
+  /// the named device [deviceName] and [proofOfPossession] string.
   Future<ProvisioningResponse?> provisionWifi(String deviceName, String proofOfPossession,
-      String ssid, String passphrase) async {
-    final args = {
-      'deviceName': deviceName,
-      'proofOfPossession': proofOfPossession,
-      'ssid': ssid,
-      'passphrase': passphrase
-    };
-    return ProvisioningResponse.fromMap(await methodChannel.invokeMethod<ProvisioningResponse?>('provisionWifi', args));
+      String ssid, String passphrase) {
+    return ProvisioningResponse.fromMap(FlutterEspBleProvPlatform.instance
+        .provisionWifi(deviceName, proofOfPossession, ssid, passphrase));
   }
 
-  @override
+  /// Send token to the provisioned device
+  /// [deviceName] is the name of the device
+  /// [proofOfPossession] is the proof of possession string
+  /// [token] is the token to send as a string
   Future<String?> sendToken(String deviceName, String proofOfPossession,
-      String token) async {
-    final args = {
-      'deviceName': deviceName,
-      'proofOfPossession': proofOfPossession,
-      'token': token
-    };
-    return await methodChannel.invokeMethod<String?>('sendToken', args);
+      String token) {
+    return FlutterEspBleProvPlatform.instance
+        .sendToken(deviceName, proofOfPossession, token);
+  }
+
+  /// Returns the native platform version
+  Future<String?> getPlatformVersion() {
+    return FlutterEspBleProvPlatform.instance.getPlatformVersion();
   }
 }
