@@ -58,7 +58,7 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
       'ssid': ssid,
       'passphrase': passphrase
     };
-    return await methodChannel.invokeMethod<ProvisioningResponse?>('provisionWifi', args);
+    return ProvisioningResponse.fromMap(await methodChannel.invokeMethod<ProvisioningResponse?>('provisionWifi', args));
   }
 
   @override
