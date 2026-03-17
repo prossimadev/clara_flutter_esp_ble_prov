@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../flutter_esp_ble_prov.dart';
 import 'flutter_esp_ble_prov_platform_interface.dart';
 import 'wifi_network.dart';
+import 'provisioning_response.dart';
 
 /// An implementation of [FlutterEspBleProvPlatform] that uses method channels.
 class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
@@ -48,7 +50,7 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
   }
 
   @override
-  Future<bool?> provisionWifi(String deviceName, String proofOfPossession,
+  Future<ProvisioningResponse?> provisionWifi(String deviceName, String proofOfPossession,
       String ssid, String passphrase) async {
     final args = {
       'deviceName': deviceName,
@@ -56,7 +58,7 @@ class MethodChannelFlutterEspBleProv extends FlutterEspBleProvPlatform {
       'ssid': ssid,
       'passphrase': passphrase
     };
-    return await methodChannel.invokeMethod<bool?>('provisionWifi', args);
+    return await methodChannel.invokeMethod<ProvisioningResponse?>('provisionWifi', args);
   }
 
   @override
