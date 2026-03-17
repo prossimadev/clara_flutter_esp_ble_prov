@@ -30,8 +30,8 @@ class FlutterEspBleProv {
   /// the named device [deviceName] and [proofOfPossession] string.
   Future<ProvisioningResponse?> provisionWifi(String deviceName, String proofOfPossession,
       String ssid, String passphrase) {
-    return ProvisioningResponse.fromMap(FlutterEspBleProvPlatform.instance
-        .provisionWifi(deviceName, proofOfPossession, ssid, passphrase));
+    return FlutterEspBleProvPlatform.instance
+        .provisionWifi(deviceName, proofOfPossession, ssid, passphrase);
   }
 
   /// Send token to the provisioned device
