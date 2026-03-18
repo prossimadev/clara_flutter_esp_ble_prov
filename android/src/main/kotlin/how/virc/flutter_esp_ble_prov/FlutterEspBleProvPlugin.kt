@@ -413,7 +413,7 @@ class TokenManager(boss: Boss) : ActionManager(boss) {
               val response = returnData?.let { String(it, Charsets.UTF_8) } ?: "OK"
               ctx.result.success(response)
             }
-            esp.disconnectDevice()
+            //esp.disconnectDevice()
           }
 
           override fun onFailure(e: Exception?) {
@@ -421,7 +421,7 @@ class TokenManager(boss: Boss) : ActionManager(boss) {
             Handler(Looper.getMainLooper()).post {
               ctx.result.error("E_SEND_TOKEN", "Failed to send token", e?.message)
             }
-            esp.disconnectDevice()
+            //esp.disconnectDevice()
           }
         })
       } catch (e: Exception) {
@@ -429,7 +429,7 @@ class TokenManager(boss: Boss) : ActionManager(boss) {
         Handler(Looper.getMainLooper()).post {
           ctx.result.error("E_SEND_TOKEN", "Failed to send token", e.message)
         }
-        esp.disconnectDevice()
+        //esp.disconnectDevice()
       }
     }
   }
