@@ -107,15 +107,23 @@ private class BLEProvisionService: ProvisionService {
         self.connect(deviceName: deviceName, proofOfPossession: proofOfPossession){
             device in
             device?.provision(ssid: ssid, passPhrase: passphrase) { status in
+                var response: [String: Any] = [:]
+
                 switch status {
                 case .success:
                     NSLog("Success provisioning device. ssid: \(ssid), deviceName: \(deviceName) ")
-                    self.result(true)
+                    //self.result(true)
+                    response["success"] = true
+                    response["message"] = "Provisioning Success"
+                    self.result(response)
                 case .configApplied:
                     NSLog("Wifi config applied device. ssid: \(ssid), deviceName: \(deviceName) ")
                 case .failure:
                     NSLog("Failed to provision device. ssid: \(ssid), deviceName: \(deviceName) ")
-                    self.result(false)
+                    //self.result(false)
+                    response["success"] = false
+                    response["message"] = "ESPERR005"
+                    self.result(response)
                 }
             }
         }
